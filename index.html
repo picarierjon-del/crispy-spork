@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Dashboard Pizzeria – Gestione Completa</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pizzeria">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="app-header">
+  <button class="menu-icon" aria-label="Menu" id="btnMenu">&#9776;</button>
+  <h1>Dashboard Pizzeria</h1>
+  <span class="header-spacer" aria-hidden="true"></span>
+</header>
+
+<!-- MENU LATERALE -->
+<nav id="sideMenu" class="side-menu" aria-label="Menu laterale">
+  <a href="#nuovo" class="menu-link">➕ Nuovo movimento</a>
+  <a href="#movimenti" class="menu-link">📜 Lista movimenti</a>
+  <a href="#riepilogo" class="menu-link">📊 Riepilogo</a>
+  <a href="#fornitori" class="menu-link">⚙️ Impostazioni / Fornitori</a>
+  <a href="#" id="btnExport" class="menu-link">⬇️ Esporta CSV</a>
+  <a href="#" id="btnClear" class="menu-link">🗑️ Svuota dati</a>
+</nav>
+
+<main class="main">
+  <!-- PANORAMICA -->
+  <section class="card" id="home">
+    <h2>Panoramica Entrate</h2>
+    <p class="saldo">€<span id="saldo">0</span></p>
+    <p class="muted">Saldo netto aggiornato dai movimenti</p>
+    <canvas id="chart" aria-label="Grafico mensile saldo"></canvas>
+  </section>
+
+  <!-- AZIONI RAPIDE -->
+  <section class="card">
+    <h2>Azioni Rapide</h2>
+    <div class="quick-actions">
+      <a href="#nuovo" class="action-item">
+        <img src="https://via.placeholder.com/30/ff5722/ffffff?text=+" alt="">
+        <span>Nuovo Movimento</span>
+      </a>
+      <a href="#movimenti" class="action-item">
+        <img src="https://via.placeholder.com/30/2196f3/ffffff?text=L" alt="">
+        <span>Lista Movimenti</span>
+      </a>
+      <a href="#riepilogo" class="action-item">
+        <img src="https://via.placeholder.com/30/4caf50/ffffff?text=R" alt="">
+        <span>Riepilogo</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- FORM NUOVO MOVIMENTO -->
+  <section id="nuovo" class="card">
+    <h2>Nuovo Movimento</h2>
+    <form id="movForm" autocomplete="off">
+      <label>Data
+        <input type="date" name="data" required>
+      </label>
+      <label>Tipo
+        <select name="tipo">
+          <option value="entrata">Entrata</option>
+          <option value="uscita">Uscita</option>
+        </select>
+      </label>
+      <label>Metodo
+        <input type="text" name="metodo" placeholder="Contanti / Carta">
+      </label>
+      <label>Categoria
+        <input type="text" name="categoria" placeholder="Pizza, Bevande...">
+      </label>
+      <label>Fornitore (opzionale)
+        <select name="fornitore" id="fornitoreSelect">
+          <option value="">-- Nessuno --</option>
+        </select>
+      </label>
+      <label>Descrizione
+        <input type="text" name="descrizione" placeholder="Dettagli">
+      </label>
+      <label>Imponibile (€)
+        <input type="number" name="imponibile" step="0.01" required>
+      </label>
+      <label>IVA %
+        <input type="number" name="ivaPercent" step="0.01" value="22">
+      </label>
+      <button type="submit">Aggiungi / Salva</button>
+    </form>
+  </section>
+
+  <!-- RIEPILOGO -->
+  <section id="riepilogo" class="card">
+    <h2>Riepilogo</h2>
+    <div class="kpi-grid">
+      <div class="kpi"><h3>Entrate</h3><div class="money ok" id="kEntrate">€0</div></div>
+      <div class="kpi"><h3>Uscite</h3><div class="money bad" id="kUscite">€0</div></div>
+      <div class="kpi"><h3>IVA Debito</h3><div class="money" id="kDebito">€0</div></div>
+      <div class="kpi"><h3>IVA Credito</h3><div class="money" id="kCredito">€0</div></div>
+    </div>
+    <h3>Report rapido</h3>
+    <select id="period">
+      <option value="W">Ultima settimana</option>
+      <option value="M">Ultimo mese</option>
+      <option value="Q">Ultimo trimestre</option>
+      <option value="Y">Ultimo anno</option>
+    </select>
+    <div class="muted" id="report"></div>
+    <h3>Scadenza IVA trimestrale</h3>
+    <div class="muted" id="ivaReminder"></div>
+  </section>
+
+  <!-- MOVIMENTI -->
+  <section id="movimenti" class="card">
+    <h2>Movimenti</h2>
+    <div class="filtri">
+      <div>
+        <button class="filtro active" data-filtro="tutti">Tutti</button>
+        <button class="filtro" data-filtro="entrata">Solo Entrate</button>
+        <button class="filtro" data-filtro="uscita">Solo Uscite</button>
+      </div>
+      <div class="supplier-filter">
+        <label>Fornitore
+          <select id="filtroFornitore"><option value="">Tutti</option></select>
+        </label>
+      </div>
+    </div>
+    <table id="tabMov">
+      <thead>
+        <tr>
+          <th>Data</th><th>Tipo</th><th>Metodo</th><th>Categoria</th>
+          <th>Fornitore</th><th>Descrizione</th><th>Totale</th><th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- IMPOSTAZIONI / FORNITORI -->
+  <section id="fornitori" class="card">
+    <h2>Gestione Fornitori</h2>
+    <form id="fornForm">
+      <label>Nome Fornitore
+        <input type="text" name="nome" required>
+      </label>
+      <button type="submit">Aggiungi Fornitore</button>
+    </form>
+    <table id="tabForn">
+      <thead><tr><th>Fornitore</th><th>Azioni</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<!-- NAVBAR INFERIORE -->
+<nav class="navbar" role="navigation" aria-label="Navigazione principale">
+  <a href="#home" class="navbar-item active">
+    <img src="https://via.placeholder.com/24/ffffff/000000?text=H" alt=""><span>Home</span>
+  </a>
+  <a href="#movimenti" class="navbar-item">
+    <img src="https://via.placeholder.com/24/ffffff/000000?text=O" alt=""><span>Movimenti</span>
+  </a>
+  <a href="#nuovo" class="navbar-item">
+    <img src="https://via.placeholder.com/24/ffffff/000000?text=+" alt=""><span>Aggiungi</span>
+  </a>
+  <a href="#fornitori" class="navbar-item">
+    <img src="https://via.placeholder.com/24/ffffff/000000?text=S" alt=""><span>Impostazioni</span>
+  </a>
+</nav>
+
+<script src="script.js"></script>
+</body>
+</html>
